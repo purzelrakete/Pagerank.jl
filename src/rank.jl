@@ -1,28 +1,35 @@
 type Rank
-  alpha::Float32
-  iterations::Int
-  edgelist::String
+  alpha::Float64
+  iters::Int
+  graph::DirectedGraph
+  vertices::Int
+  prior::Vector
 
-  Rank(alpha, iterations, edgelist) = new(alpha, iterations, edgelist)
+  function Rank(alpha::Float64, iters::Int, edgelist::String)
+    new(alpha, iters, Graphs.read_edgelist(edgelist))
+  end
+
+  function Rank(alpha::Float64, iters::Int, graph::DirectedGraph)
+    new(alpha, iters, graph, graph.size, ones(graph.size) / graph.size)
+  end
 end
 
 function stationary_distribution(rank::Rank)
-  println("> parsing edgelist")
+  println("> parsing graph")
 
-  g = read_edgelist(rank.edgelist)
-  n = order(g)
+  n = order(rank.graph)
   a = zeros(Float64, n, n)
   names = Dict{Int,Vertex}(n)
 
   println("> building adjacency matrix")
 
-  for edge in edges(g)
+  for edge in edges(rank.graph)
     a[id(out(edge)), id(in(edge))] = 1
   end
 
   println("> building vertex lookup")
 
-  for vertex in vertices(g)
+  for vertex in vertices(rank.graph)
     names[id(vertex)] = vertex
   end
 
@@ -32,7 +39,7 @@ function stationary_distribution(rank::Rank)
     outdegree = sum(a[i, :])
 
     if outdegree == 0
-      a[i, :] = 1.0 / n
+      a[i, :] = prior[i]
     else
       a[i, :] = a[i, :] ./ outdegree
     end
@@ -46,7 +53,7 @@ function stationary_distribution(rank::Rank)
   p = zeros(1, n)
   p[1] = 1
 
-  for i in 1:rank.iterations
+  for i in 1:rank.iters
     println(@sprintf("> %d", i))
     p = p * a
   end
