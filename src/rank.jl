@@ -6,11 +6,13 @@ type Rank
   prior::Vector
 
   function Rank(alpha::Float64, iters::Int, edgelist::String)
-    new(alpha, iters, Graphs.read_edgelist(edgelist))
+    Rank(alpha, iters, Graphs.read_edgelist(edgelist))
   end
 
   function Rank(alpha::Float64, iters::Int, graph::DirectedGraph)
-    new(alpha, iters, graph, graph.size, ones(graph.size) / graph.size)
+    vertices = length(graph.vertices)
+    uniform = ones(vertices) / vertices
+    new(alpha, iters, graph, vertices, uniform)
   end
 end
 
@@ -39,7 +41,7 @@ function stationary_distribution(rank::Rank)
     outdegree = sum(a[i, :])
 
     if outdegree == 0
-      a[i, :] = prior[i]
+      a[i, :] = rank.prior[i]
     else
       a[i, :] = a[i, :] ./ outdegree
     end

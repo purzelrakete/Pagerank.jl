@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+set -u
+
+dotfile="$1.dot"
+tsvfile="$1.tsv"
+
+if [[ -f "$dotfile" ]]
+  then
+    cat "$dotfile" | sed 's/ -> /	/' | sed 's/^ *//' | sed 1d | sed \$d > "$tsvfile"
+  else
+    echo 2>&1 dotfile missing: $dotfile
+    exit 1
+fi
+

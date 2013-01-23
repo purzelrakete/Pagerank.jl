@@ -1,7 +1,10 @@
 require("Pagerank")
 using Pagerank
 
-tests = ["test/rank.jl"]
+tests = [
+  "test/rank.jl",
+  "test/dangling.jl"
+]
 
 println("Running suite.")
 
