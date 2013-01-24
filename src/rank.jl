@@ -2,7 +2,7 @@ type Rank
   alpha::Float64
   iters::Int
   graph::DirectedGraph
-  vertices::Int
+  size::Int
   prior::Vector
 
   function Rank(alpha::Float64, iters::Int, edgelist::String)
@@ -10,18 +10,15 @@ type Rank
   end
 
   function Rank(alpha::Float64, iters::Int, graph::DirectedGraph)
-    vertices = length(graph.vertices)
-    uniform = ones(vertices) / vertices
-    new(alpha, iters, graph, vertices, uniform)
+    size = order(graph)
+    uniform = ones(size) / size
+    new(alpha, iters, graph, size, uniform)
   end
 end
 
 function stationary_distribution(rank::Rank)
-  println("> parsing graph")
-
-  n = order(rank.graph)
-  a = zeros(Float64, n, n)
-  names = Dict{Int,Vertex}(n)
+  a = zeros(Float64, rank.size, rank.size)
+  names = Dict{Int,Vertex}(rank.size)
 
   println("> building adjacency matrix")
 
@@ -37,7 +34,7 @@ function stationary_distribution(rank::Rank)
 
   println("> building probability matrix")
 
-  for i = 1:n
+  for i = 1:rank.size
     outdegree = sum(a[i, :])
 
     if outdegree == 0
@@ -48,11 +45,11 @@ function stationary_distribution(rank::Rank)
   end
 
   a = a .* (1 - rank.alpha)
-  a += rank.alpha / n
+  a += rank.alpha / rank.size
 
   println("> running pagerank")
 
-  p = zeros(1, n)
+  p = zeros(1, rank.size)
   p[1] = 1
 
   for i in 1:rank.iters
