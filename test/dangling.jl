@@ -7,12 +7,8 @@ names, actual = stationary_distribution(rank)
 count = size(actual)[2]
 
 # expected rank is  4, 3, 2, 5, 6, 1,
-expected = [0.037376, 0.208177, 0.245340, 0.245340, 0.176409, 0.087354]
+expected = [0.037375 0.208173 0.245344 0.245344 0.176404 0.087356]
 precision = 5
-
-for i in 1:count
-  println(@sprintf("%s	%s", names[i], actual[i]))
-end
 
 @assert isequal(floor(expected, precision), floor(actual, precision))
 

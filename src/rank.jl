@@ -1,62 +1,52 @@
 type Rank
   alpha::Float64
-  iters::Int
+  iters::Integer
   graph::DirectedGraph
-  size::Int
-  prior::Vector
+  size::Integer
+  prior::Array{Float64}
 
-  function Rank(alpha::Float64, iters::Int, edgelist::String)
+  function Rank(alpha::Float64, iters::Integer, edgelist::String)
     Rank(alpha, iters, Graphs.read_edgelist(edgelist))
   end
 
-  function Rank(alpha::Float64, iters::Int, graph::DirectedGraph)
+  function Rank(alpha::Float64, iters::Integer, graph::DirectedGraph)
     size = order(graph)
-    uniform = ones(size) / size
+    uniform = ones(1, size) / size
     new(alpha, iters, graph, size, uniform)
   end
 end
 
 function stationary_distribution(rank::Rank)
-  a = zeros(Float64, rank.size, rank.size)
-  names = Dict{Int,Vertex}(rank.size)
+  M::SparseMatrixCSC{Float64, Int64} = spzeros(rank.size, rank.size)
+  names = Dict{Integer,Vertex}(rank.size)
 
-  println("> building adjacency matrix")
+  println("> building adjacency matrix for $(rank.size) vertices")
 
   for edge in edges(rank.graph)
-    a[id(out(edge)), id(in(edge))] = 1
+    M[id(out(edge)), id(in(edge))] = 1
   end
-
-  println("> building vertex lookup")
 
   for vertex in vertices(rank.graph)
     names[id(vertex)] = vertex
   end
 
-  println("> building probability matrix")
+  println("> normalize and dampen")
 
-  for i = 1:rank.size
-    outdegree = sum(a[i, :])
+  totals = sum(M, 2)
+  absorbing = find(x -> x == 0, totals)
+  totals[absorbing] = 1
+  N = rank.alpha * bsxfun(./, M, totals)
 
-    if outdegree == 0
-      a[i, :] = rank.prior[i]
-    else
-      a[i, :] = a[i, :] ./ outdegree
-    end
-  end
+  println("> iterating")
 
-  a = a .* (1 - rank.alpha)
-  a += rank.alpha / rank.size
-
-  println("> running pagerank")
-
-  p = zeros(1, rank.size)
-  p[1] = 1
+  r::Array{Float64} = zeros(1, rank.size)
+  r[1] = 1
 
   for i in 1:rank.iters
-    println(@sprintf("> %d", i))
-    p = p * a
+    reabsorption = sum(r[absorbing]) * rank.alpha / rank.size
+    r = r * N + ((1 - rank.alpha) / rank.size) + reabsorption
   end
 
-  return names, p
+  return names, r
 end
 
