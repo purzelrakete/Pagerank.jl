@@ -1,8 +1,8 @@
 alpha = 0.5
-iterations = 20
+accuracy = 0.00001
 edgelist = "test/data/test.tsv"
 
-rank = Rank(alpha, iterations, edgelist)
+rank = Rank(alpha, accuracy, edgelist)
 names, actual = stationary_distribution(rank)
 count = size(actual)[2]
 

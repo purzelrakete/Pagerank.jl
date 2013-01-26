@@ -1,8 +1,8 @@
 alpha = 0.85
-iterations = 100
+accuracy = 0.00001
 edgelist = "test/data/dangling.tsv"
 
-rank = Rank(alpha, iterations, edgelist)
+rank = Rank(alpha, accuracy, edgelist)
 names, actual = stationary_distribution(rank)
 count = size(actual)[2]
 
