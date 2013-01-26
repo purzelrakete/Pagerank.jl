@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+set -u
+
+dot="data/$name.dot"
+tsv="data/$name.tsv"
+
+if [[ -f "$dot" ]]
+  then
+    sed '1d; $d; s/^ *//; s/ -> /	/' "$dot" > "$tsv"
+  else
+    echo 2>&1 dot file missing: "$dot"
+    exit 1
+fi
+

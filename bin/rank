@@ -1,0 +1,17 @@
+#!/usr/bin/env julia
+
+require("Pagerank")
+using Pagerank
+
+alpha = 0.85
+accuracy = 0.00001
+edgelist = ARGS[1]
+
+rank = Rank(alpha, accuracy, edgelist)
+names, r = stationary_distribution(rank)
+count = size(r)[2]
+
+for i in 1:count
+  println("$(names[i])	$(r[i])")
+end
+
