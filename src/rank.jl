@@ -16,6 +16,8 @@ type Rank
   end
 end
 
+size(rank::Rank) = rank.size
+
 function stationary_distribution(rank::Rank)
   A::SparseMatrixCSC{Float64, Int64} = spzeros(rank.size, rank.size)
   names = Dict{Integer,Vertex}(rank.size)

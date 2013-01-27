@@ -8,7 +8,7 @@ tsv="data/$name.tsv"
 
 if [[ -f "$dot" ]]
   then
-    sed '1d; $d; s/^ *//; s/ -> /	/' "$dot" > "$tsv"
+    sed '1d; $d; s/^ *//; s/ -> /	/' "$dot" | sort -nk1,2 > "$tsv"
   else
     echo 2>&1 dot file missing: "$dot"
     exit 1
