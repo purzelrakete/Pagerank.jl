@@ -2,7 +2,8 @@ alpha = 0.85
 edgelist = "test/data/dangling.tsv"
 order = 6
 
-actual = pagerank_matrix(order, edgelist, alpha)
+M, origin_idx, absorbing, size = pagerank_matrix(alpha, edgelist)
+
 expected = sparse([
  0.0  0.85     0.0      0.0      0.0      0.0
  0.0  0.0      0.425    0.425    0.0      0.0
@@ -12,6 +13,7 @@ expected = sparse([
  0.0  0.0      0.0      0.0      0.0      0.0
 ])
 
-difference = (max(dense(expected) - dense(actual)))
+difference = (max(dense(expected) - dense(M)))
 @assert isequal(0, difference)
+@assert isequal([6], absorbing)
 

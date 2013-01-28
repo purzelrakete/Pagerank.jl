@@ -41,10 +41,10 @@
 # This matrix of cartesian coordinates is directly converted into a sparse csc
 # matrix by extracting the column vectors.
 #
-function pagerank_matrix(order::Integer, pathname::String, alpha::Float64)
+function pagerank_matrix(alpha::Float64, pathname::String)
 
   # origin to projected
-  origin_idx = Dict{Int32,Int32}(order)
+  origin_idx = Dict{Int32,Int32}()
 
   # sequence for projected ids
   sequence = 1
@@ -65,18 +65,20 @@ function pagerank_matrix(order::Integer, pathname::String, alpha::Float64)
 
   # second pass builds I, J, V
   io = open(pathname, "r")
-  I, J, V, sinks = Int32[], Int32[], Float64[], Int32[]
+
+  # all of these (except for V) are in projected space.
+  I, J, V, sinks, absorbing = Int32[], Int32[], Float64[], Int32[], Int32[]
+
+  # previous_source, source and sink are in origin space.
   previous_source = 0
   for line in EachLine(io)
     fields = split(chomp(line), r"[\s,]+")
     source, sink = int32(fields[1]), int32(fields[2])
 
     if get(origin_idx, sink, 0) == 0
-      sink = sequence
       origin_idx[sink] = sequence
+      push!(absorbing, sequence)
       sequence += 1
-    else
-      sink = origin_idx[sink]
     end
 
     if previous_source != 0 && source != previous_source
@@ -85,15 +87,15 @@ function pagerank_matrix(order::Integer, pathname::String, alpha::Float64)
       sort!(sinks)
 
       for out in sinks
-        push!(I, previous_source)
+        push!(I, origin_idx[previous_source])
         push!(J, out)
         push!(V, value)
       end
 
-      previous_source, sinks = source, [sink]
+      previous_source, sinks = source, [origin_idx[sink]]
     else
       previous_source = source
-      push!(sinks, sink)
+      push!(sinks, origin_idx[sink])
     end
   end
 
@@ -102,15 +104,16 @@ function pagerank_matrix(order::Integer, pathname::String, alpha::Float64)
   sort!(sinks)
 
   for out in sinks
-    push!(I, previous_source)
+    push!(I, origin_idx[previous_source])
     push!(J, out)
     push!(V, value)
   end
 
   close(io)
 
-  M::SparseMatrixCSC{Float64, Int64} = sparse(I, J, V, order, order)
+  size = sequence - 1
+  M::SparseMatrixCSC{Float64, Int64} = sparse(I, J, V, size, size)
 
-  return M
+  return M, origin_idx, absorbing, size
 end
 

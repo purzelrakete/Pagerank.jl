@@ -2,8 +2,8 @@ require("Pagerank")
 using Pagerank
 
 tests = [
-  "test/io.jl",
   "test/rank.jl",
+  "test/io.jl",
   "test/dangling.jl"
 ]
 

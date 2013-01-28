@@ -7,5 +7,6 @@ module Pagerank
 
   include("io.jl")
   include("rank.jl")
+  include("graph.jl")
 end
 
