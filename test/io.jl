@@ -1,5 +1,5 @@
 alpha = 0.85
-edgelist = "test/data/dangling.tsv"
+edgelist = "test/data/dangling.tsv.gz"
 order = 6
 
 M, origin_idx, absorbing, size = pagerank_matrix(alpha, edgelist)

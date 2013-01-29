@@ -49,11 +49,13 @@ function pagerank_matrix(alpha::Float64, pathname::String)
   # sequence for projected ids
   sequence = 1
 
+  # read zipped adjacency lists
+  reader = ends_with(pathname, ".gz") ? gzopen : open
+
   # first pass collects all origin source ids to maintain source sorting
-  io = open(pathname, "r")
+  io = reader(pathname, "r")
   for line in EachLine(io)
-    fields = split(chomp(line), r"[\s,]+")
-    source = int32(fields[1])
+    source = int32(line[1:strchr(line, '	') - 1])
 
     if get(origin_idx, source, 0) == 0
       origin_idx[source] = sequence
@@ -64,7 +66,7 @@ function pagerank_matrix(alpha::Float64, pathname::String)
   close(io)
 
   # second pass builds I, J, V
-  io = open(pathname, "r")
+  io = reader(pathname, "r")
 
   # all of these (except for V) are in projected space.
   I, J, V, sinks, absorbing = Int32[], Int32[], Float64[], Int32[], Int32[]
