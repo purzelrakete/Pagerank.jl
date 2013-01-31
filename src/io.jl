@@ -51,7 +51,7 @@ function pagerank_matrix(alpha::Float64, pathname::String)
 
   # first pass collects all origin source ids to maintain source sorting
   io = open(pathname, "r")
-  for line in EachLine(io)
+  @time for line in EachLine(io)
     source = int32(line[1:strchr(line, '	') - 1])
 
     if get(origin_idx, source, 0) == 0
@@ -70,7 +70,7 @@ function pagerank_matrix(alpha::Float64, pathname::String)
 
   # previous_source, source and sink are in origin space.
   previous_source = 0
-  for line in EachLine(io)
+  @time for line in EachLine(io)
     separator = strchr(line, '	')
     source = int32(line[1:separator - 1])
     sink = int32(line[separator:end])

@@ -26,6 +26,7 @@ function stationary_distribution(rank)
     last = r
     reabsorption = sum(r[rank.absorbing]) * rank.alpha / rank.size
     r = r * rank.M  + ((1 - rank.alpha) / rank.size) + reabsorption
+    @show i
   end
 
   return r, rank.origin_idx
