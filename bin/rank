@@ -14,6 +14,8 @@ projected_idx = map(x -> x[2], sort(reverse(pairs(origin_idx))))
 count = length(r)
 
 for i in 1:count
-  println("$(projected_idx[i])	$(r[i])")
+  print(projected_idx[i])
+  print("	")
+  println(@sprintf("%0.20f", r[i]))
 end
 
