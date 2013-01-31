@@ -1,6 +1,5 @@
 module Pagerank
   using Graphs
-  using GZip
 
   export Rank
   export stationary_distribution
