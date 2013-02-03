@@ -41,10 +41,13 @@
 # This matrix of cartesian coordinates is directly converted into a sparse csc
 # matrix by extracting the column vectors.
 #
-function pagerank_matrix(alpha::Float64, pathname::String)
+# Tv: sparse matrix value type
+# Ti: sparse matrix id space
+#
+function pagerank_matrix(Tv::Type, Ti::Type, alpha::Float64, pathname::String)
 
   # origin to projected
-  origin_idx = Dict{Int32,Int32}()
+  origin_idx = Dict{Ti,Ti}()
 
   # sequence for projected ids
   sequence = 1
@@ -66,7 +69,7 @@ function pagerank_matrix(alpha::Float64, pathname::String)
   io = open(pathname, "r")
 
   # all of these (except for V) are in projected space.
-  I, J, V, sinks, absorbing = Int32[], Int32[], Float64[], Int32[], Int32[]
+  I, J, V, sinks, absorbing = Ti[], Ti[], Tv[], Ti[], Ti[]
 
   # previous_source, source and sink are in origin space.
   previous_source = 0
@@ -112,7 +115,7 @@ function pagerank_matrix(alpha::Float64, pathname::String)
   close(io)
 
   size = sequence - 1
-  M::SparseMatrixCSC{Float64, Int64} = sparse(I, J, V, size, size)
+  M::SparseMatrixCSC = sparse(I, J, V, size, size)
 
   return M, origin_idx, absorbing, size
 end

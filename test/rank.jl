@@ -2,7 +2,7 @@ alpha = 0.5
 accuracy = 0.0000001
 edgelist = "test/data/test.tsv"
 
-rank = Rank(alpha, accuracy, edgelist)
+rank = Rank{Float64,Int64}(alpha, accuracy, edgelist)
 r, origin_idx = stationary_distribution(rank)
 count = length(r)
 

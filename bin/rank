@@ -7,7 +7,7 @@ alpha = 0.85
 accuracy = 0.00001
 edgelist = ARGS[1]
 
-rank = Rank(alpha, accuracy, edgelist)
+rank = Rank{Float32,Int64}(alpha, accuracy, edgelist)
 r, origin_idx = stationary_distribution(rank)
 
 projected_idx = map(x -> x[2], sort(reverse(pairs(origin_idx))))

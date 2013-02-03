@@ -2,7 +2,7 @@ alpha = 0.85
 accuracy = 0.00001
 edgelist = "test/data/dangling.tsv"
 
-rank = Rank(alpha, accuracy, edgelist)
+rank = Rank{Float64,Int64}(alpha, accuracy, edgelist)
 r, origin_idx = stationary_distribution(rank)
 count = length(r)
 

@@ -1,14 +1,16 @@
-type Rank
+# Tv: sparse matrix value type
+# Ti: sparse matrix id space
+type Rank{Tv<:Real,Ti<:Integer}
   alpha::Float64
   accuracy::Float64
   size::Integer
-  absorbing::Array{Int32}
-  M::SparseMatrixCSC{Float64, Int64}
-  origin_idx::Dict{Int32,Int32}
-  prior::Array{Float64}
+  absorbing::Array{Tv}
+  M::SparseMatrixCSC{Tv,Ti}
+  origin_idx::Dict{Ti,Ti}
+  prior::Array{Tv}
 
   function Rank(alpha::Float64, accuracy::Float64, edges::String)
-    M, origin_idx, absorbing, size = pagerank_matrix(alpha, edges)
+    M, origin_idx, absorbing, size = pagerank_matrix(Tv,Ti, alpha, edges)
     new(alpha, accuracy, size, absorbing, M, origin_idx, ones(1, size) / size)
   end
 end
