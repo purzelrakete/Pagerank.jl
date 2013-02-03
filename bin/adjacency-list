@@ -1,0 +1,38 @@
+#!/usr/bin/env awk -f
+
+BEGIN {
+  FS = "\t"
+}
+
+/./ {
+  source = $1
+  sink = $2
+
+  if (previous_source && previous_source != source) {
+    outdegree = length(sinks)
+    print(previous_source, outdegree)
+
+    for (i = 0; i < si; i++) {
+      print(sinks[i])
+    }
+
+    delete sinks
+
+    si = 0
+    previous_source = source
+    sinks[si++] = sink
+  } else {
+    previous_source = source
+    sinks[si++] = sink
+  }
+}
+
+END {
+  outdegree = length(sinks)
+  print(previous_source, outdegree)
+
+  for (i = 0; i < si; i++) {
+    print(sinks[i])
+  }
+}
+

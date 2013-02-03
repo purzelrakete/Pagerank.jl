@@ -1,0 +1,10 @@
+#!/bin/sh
+
+mkdir -p test/fixtures
+
+for fixture in test/data/*.dot
+do
+  dot=$(basename $fixture)
+  cat $fixture | bin/tsv | bin/adjacency-list > test/fixtures/${dot//.dot/.adj}
+done
+

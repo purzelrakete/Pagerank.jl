@@ -1,122 +1,47 @@
-# Reads an i, j sorted adjacency list. The unweighted directed graph is
-# written as the adjacency matrix scaled by α and L1 normalized rowwise. The
-# resulting immutable sparse matrix M can be used by the power method to
-# calculate a pagerank vector.
-#
-# Given the following adjacency list:
-#
-#   1 8
-#   1 6
-#   1 2
-#   2 1
-#   2 3
-#
-# with vertices [1 2 3 6 8], vertex ids are projected into a compressed,
-# contiguous space, ie [1:5].
-#
-# Projected
-#
-#   1 5
-#   1 4
-#   1 2
-#   2 1
-#   2 3
-#
-# Resorted
-#
-#   1 2
-#   1 4
-#   1 5
-#   2 1
-#   2 3
-#
-# These coordinates are then given scaled and sink normalized values
-#
-#   1 2 α/3
-#   1 4 α/3
-#   1 5 α/3
-#   2 1 α/2
-#   2 3 α/2
-#
-# This matrix of cartesian coordinates is directly converted into a sparse csc
-# matrix by extracting the column vectors.
-#
 # Tv: sparse matrix value type
-# Ti: sparse matrix id space
-#
+# Ti: sparse matrix ordinal space
 function pagerank_matrix(Tv::Type, Ti::Type, alpha::Float64, pathname::String)
+  I, J, V = Ti[], Ti[], Tv[]
+  vertices, sources  = Set{Ti}(), Set{Ti}()
 
-  # origin to projected
-  origin_idx = Dict{Ti,Ti}()
-
-  # sequence for projected ids
-  sequence = 1
-
-  # first pass collects all origin source ids to maintain source sorting
   io = open(pathname, "r")
+  sinks = 0
+  outdegree = 0
+  edges = 0
+  max_ordinal = 0
   @time for line in EachLine(io)
-    source = int32(line[1:strchr(line, '	') - 1])
+    if sinks == outdegree
+      separator = strchr(line, ' ')
+      source = int32(line[1:separator - 1])
+      outdegree = int32(line[separator:end])
+      add!(sources, source)
+      add!(vertices, source)
 
-    if get(origin_idx, source, 0) == 0
-      origin_idx[source] = sequence
-      sequence += 1
-    end
-  end
-
-  close(io)
-
-  # second pass builds I, J, V
-  io = open(pathname, "r")
-
-  # all of these (except for V) are in projected space.
-  I, J, V, sinks, absorbing = Ti[], Ti[], Tv[], Ti[], Ti[]
-
-  # previous_source, source and sink are in origin space.
-  previous_source = 0
-  @time for line in EachLine(io)
-    separator = strchr(line, '	')
-    source = int32(line[1:separator - 1])
-    sink = int32(line[separator:end])
-
-    if get(origin_idx, sink, 0) == 0
-      origin_idx[sink] = sequence
-      push!(absorbing, sequence)
-      sequence += 1
-    end
-
-    if previous_source != 0 && source != previous_source
-      outdegree = length(sinks)
-      value = alpha / outdegree
-      sort!(sinks)
-
-      for out in sinks
-        push!(I, origin_idx[previous_source])
-        push!(J, out)
-        push!(V, value)
+      if max_ordinal < source
+        max_ordinal = source
       end
 
-      previous_source, sinks = source, [origin_idx[sink]]
+      sinks = 0
     else
-      previous_source = source
-      push!(sinks, origin_idx[sink])
+      sink = int32(line)
+      push!(I, source)
+      push!(J, sink)
+      push!(V, alpha / outdegree)
+      add!(vertices, sink)
+
+      if max_ordinal < sink
+        max_ordinal = sink
+      end
+
+      sinks += 1
+      edges += 1
     end
   end
 
-  outdegree = length(sinks)
-  value = alpha / outdegree
-  sort!(sinks)
+  order = length(vertices)
+  absorbing = vertices - sources
+  M::SparseMatrixCSC = sparse(I, J, V, max_ordinal, max_ordinal)
 
-  for out in sinks
-    push!(I, origin_idx[previous_source])
-    push!(J, out)
-    push!(V, value)
-  end
-
-  close(io)
-
-  size = sequence - 1
-  M::SparseMatrixCSC = sparse(I, J, V, size, size)
-
-  return M, origin_idx, absorbing, size
+  return M, keys(absorbing.hash), order, max_ordinal
 end
 

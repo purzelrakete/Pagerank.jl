@@ -5,16 +5,14 @@ using Pagerank
 
 alpha = 0.85
 accuracy = 0.00001
-edgelist = ARGS[1]
+adjacencies = ARGS[1]
 
-rank = Rank{Float32,Int64}(alpha, accuracy, edgelist)
-r, origin_idx = stationary_distribution(rank)
-
-projected_idx = map(x -> x[2], sort(reverse(pairs(origin_idx))))
+rank = Rank{Float32,Int64}(alpha, accuracy, adjacencies)
+r = stationary_distribution(rank)
 count = length(r)
 
 for i in 1:count
-  print(projected_idx[i])
+  print(i)
   print("	")
   println(@sprintf("%0.20f", r[i]))
 end
