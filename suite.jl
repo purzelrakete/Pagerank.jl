@@ -1,10 +1,13 @@
 require("Pagerank")
 using Pagerank
 
+run(`test/bin/setup`)
+
 tests = [
-  "test/rank.jl",
-  "test/io.jl",
-  "test/dangling.jl"
+  "test/io/dangling.jl",
+  "test/rank/dangling.jl",
+  "test/rank/gaps.jl",
+  "test/rank/simple.jl"
 ]
 
 println("Running suite.")

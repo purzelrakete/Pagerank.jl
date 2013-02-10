@@ -1,5 +1,9 @@
 #!/usr/bin/env awk -f
 
+BEGIN {
+  FS = "\t"
+}
+
 /./ {
   source = $1
   sink = $2
@@ -8,7 +12,7 @@
     outdegree = length(sinks)
     print(previous_source, outdegree)
 
-    for (i in sinks) {
+    for (i = 0; i < si; i++) {
       print(sinks[i])
     }
 
@@ -27,7 +31,7 @@ END {
   outdegree = length(sinks)
   print(previous_source, outdegree)
 
-  for (i in sinks) {
+  for (i = 0; i < si; i++) {
     print(sinks[i])
   }
 }
