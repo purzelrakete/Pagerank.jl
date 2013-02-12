@@ -4,6 +4,7 @@ using Pagerank
 run(`test/bin/setup`)
 
 tests = [
+  "test/io/fast.jl",
   "test/io/dangling.jl",
   "test/rank/dangling.jl",
   "test/rank/gaps.jl",

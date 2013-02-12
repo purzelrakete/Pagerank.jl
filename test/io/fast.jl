@@ -2,7 +2,7 @@ alpha = 0.85
 list = "test/fixtures/dangling.adj"
 order = 6
 
-M, absorbing, order, max_ordinal = readadj(Float64, Int64, alpha, list)
+M, absorbing, order, max_ordinal = fastadj(Float64, Int64, alpha, list, 8)
 
 expected = sparse([
  0.0  0.85     0.0      0.0      0.0      0.0

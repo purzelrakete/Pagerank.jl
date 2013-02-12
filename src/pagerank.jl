@@ -1,7 +1,7 @@
 module Pagerank
   export Rank
   export stationary_distribution
-  export pagerank_matrix
+  export readadj, fastadj
 
   include("io.jl")
   include("rank.jl")

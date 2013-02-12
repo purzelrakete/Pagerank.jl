@@ -7,8 +7,11 @@ alpha = 0.85
 accuracy = 0.00001
 adjacencies = ARGS[1]
 
-rank = Rank{Float32,Int64}(alpha, accuracy, adjacencies)
-r = stationary_distribution(rank)
+println("constructing rank")
+@time rank = Rank{Float32,Int32}(alpha, accuracy, adjacencies)
+
+println("walking graph")
+@time r = stationary_distribution(rank)
 count = length(r)
 
 for i in 1:count
