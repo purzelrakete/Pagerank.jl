@@ -5,6 +5,14 @@ mkdir -p test/fixtures
 for fixture in test/data/*.dot
 do
   dot=$(basename $fixture)
-  cat $fixture | bin/tsv | bin/adjacency-list > test/fixtures/${dot//.dot/.adj}
+  adj=test/fixtures/${dot//.dot/.adj}
+
+  # transform
+  cat $fixture | bin/tsv | bin/adjacency-list -v meta=$adj.meta > $adj
+
+  # add headers
+  cat $adj.meta $adj > $adj.tmp
+  mv $adj.tmp $adj
+  rm $adj.meta
 done
 

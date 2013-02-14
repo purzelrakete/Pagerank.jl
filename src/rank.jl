@@ -10,7 +10,7 @@ type Rank{Tv<:Real,Ti<:Integer}
   prior::Array{Tv}
 
   function Rank(alpha::Float64, accuracy::Float64, edges::String)
-    M, absorbing, order, max = fastadj(Tv,Ti, alpha, edges)
+    M, absorbing, order, max = readadj(Tv,Ti, alpha, edges)
     new(alpha, accuracy, order, max, absorbing, M, ones(1, order) / order)
   end
 end

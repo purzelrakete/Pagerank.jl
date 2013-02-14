@@ -7,6 +7,14 @@ BEGIN {
 /./ {
   source = $1
   sink = $2
+  edges++
+
+  vertices[source]++
+  vertices[sink]++
+
+  if(sink > max_ordinal) {
+    max_ordinal = sink
+  }
 
   if (previous_source && previous_source != source) {
     outdegree = length(sinks)
@@ -34,5 +42,12 @@ END {
   for (i = 0; i < si; i++) {
     print(sinks[i])
   }
+
+  if(previous_source > max_ordinal) {
+    max_ordinal = previous_source
+  }
+
+  # metadata. meta file is set with awk -v meta=file
+  printf("%d %d %d\n\n", edges, length(vertices), max_ordinal) >meta
 }
 
