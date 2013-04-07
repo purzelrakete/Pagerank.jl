@@ -1,60 +1,20 @@
-# Tv: sparse matrix value type
-# Ti: sparse matrix ordinal space
-function readadj(Tv::Type, Ti::Type, alpha::Float64, path::String)
+# reads adjacency list format directly into a sparse csc matrix.
+#
+function read_adjacency_list(Tv::Type, Ti::Type, path::String, bufsize::Int64)
   io = open(path, "r")
 
   header = readline(io)
-  edges, order, max_ordinal = map(int64, split(header))
+  nnz, height, width = map(int64, split(header))
   readline(io)
 
-  I, J, V = Ti[], Ti[], Tv[]
-  vertices, sources  = Set{Ti}(), Set{Ti}()
+  rowval, colptr, nzval = Array(Ti, nnz), Array(Ti, width + 1), Array(Tv, nnz)
 
-  sinks = 0
-  outdegree = 0
-  @time for line in EachLine(io)
-    if sinks == outdegree
-      separator = strchr(line, ' ')
-      source = int32(line[1:separator - 1])
-      outdegree = int32(line[separator:end])
-      add!(sources, source)
-      add!(vertices, source)
-
-      sinks = 0
-    else
-      sink = int32(line)
-      push!(I, source)
-      push!(J, sink)
-      push!(V, alpha / outdegree)
-      add!(vertices, sink)
-
-      sinks += 1
-    end
-  end
-
-  close(io)
-
-  absorbing = vertices - sources
-  M::SparseMatrixCSC = sparse(I, J, V, max_ordinal, max_ordinal)
-
-  return M, keys(absorbing.hash), order, max_ordinal
-end
-
-# Tv: sparse matrix value type
-# Ti: sparse matrix ordinal space
-function fastadj(Tv::Type, Ti::Type, alpha::Float64, path::String, bufsize::Int64)
-  io = open(path, "r")
-
-  header = readline(io)
-  edges, order, max_ordinal = map(int64, split(header))
-  readline(io)
-
-  I, J, V = Array(Ti, edges), Array(Ti, edges), Array(Tv, edges)
   buffer = Array(Uint8, bufsize)
-  ordinal = 0
-  sinks = 0
-  outdegree = 0
+  colind = 0
   edge = 0
+  ordinal = 0
+  sink = 0
+  weight_line = false
 
   while !eof(io)
     fill!(buffer, 0)
@@ -63,22 +23,27 @@ function fastadj(Tv::Type, Ti::Type, alpha::Float64, path::String, bufsize::Int6
     end
 
     for i = 1:length(buffer)
-      if buffer[i] == '\n'
-        if sinks == 0
-          outdegree = ordinal
-        else
-          sink = ordinal
+      if buffer[i] == ' '
+        source = ordinal
+        weight_line = true
+        ordinal = 0
+      elseif buffer[i] == '\n'
+        if weight_line
+          weight = ordinal
+          weight_line = false
           edge += 1
-          I[edge] = source
-          J[edge] = sink
-          V[edge] = alpha / outdegree
+
+          rowval[edge] = source
+          nzval[edge] = weight
+        else
+          colind += 1 # starting a new column
+          gap = ordinal - sink - 1 # ie 0 gap between 14 and 15
+          sink = ordinal
+
+          colptr[colind:(colind + gap)] = edge + 1
+          colind += gap
         end
 
-        sinks += 1
-        ordinal = 0
-      elseif buffer[i] == ' '
-        source = ordinal
-        sinks = 0
         ordinal = 0
       else
         ordinal = (ordinal * 10) + (buffer[i] - 48)
@@ -86,20 +51,13 @@ function fastadj(Tv::Type, Ti::Type, alpha::Float64, path::String, bufsize::Int6
     end
   end
 
+  colptr[width + 1] = nnz + 1
   close(io)
 
-  @time M::SparseMatrixCSC = sparse(I, J, V, max_ordinal, max_ordinal)
-
-  return M, order, max_ordinal
+  SparseMatrixCSC(height, width, colptr, rowval, nzval)
 end
 
-function fastadj(Tv::Type, Ti::Type, alpha::Float64, path::String)
-  fastadj(Tv, Ti, alpha, path, 8192)
-end
-
-function count_edges(path::String)
-  lines = countlines(path)
-  spaces = countlines(path, ' ') - 1 # broken?
-  lines - spaces
+function read_adjacency_list(Tv::Type, Ti::Type, path::String)
+  read_adjacency_list(Tv, Ti, path, 8192)
 end
 

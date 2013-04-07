@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+set -u
+set -o pipefail
+
+bin/compress -v lookup=$adj.idx | \
+  sort -nk2 -nk1 | \
+  bin/adjacency-list -v meta=$adj.meta
+

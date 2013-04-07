@@ -1,0 +1,26 @@
+#!/usr/bin/env awk -f
+
+# lookup file is set with awk -v lookup=file
+
+BEGIN {
+  FS = "\t"
+  OFS = "\t"
+}
+
+/./ {
+  source = $1
+  sink = $2
+
+  print compress(source), compress(sink)
+}
+
+function compress(id) {
+  if(!table[id]) {
+    table[id] = ++seq
+
+    # log mapping to lookup file
+    print(seq, id) >lookup
+  }
+
+  return table[id]
+}

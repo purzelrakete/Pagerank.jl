@@ -4,20 +4,20 @@ type Rank{Tv<:Real,Ti<:Integer}
   alpha::Float64
   accuracy::Float64
   order::Ti
-  max::Ti
   absorbing::Array{Ti}
   M::SparseMatrixCSC{Tv,Ti}
   prior::Array{Tv}
 
   function Rank(alpha::Float64, accuracy::Float64, edges::String)
-    M, absorbing, order, max = readadj(Tv,Ti, alpha, edges)
-    new(alpha, accuracy, order, max, absorbing, M, ones(1, order) / order)
+    M = read_adjacency_list(Tv,Ti, alpha, edges)
+    order, _ = size(M)
+    new(alpha, accuracy, order, absorbing(M), M, ones(1, order) / order)
   end
 end
 
 function stationary_distribution(rank)
-  r::Array{Float64, 1} = zeros(rank.max)
-  last::Array{Float64, 1} = zeros(rank.max)
+  r::Array{Float64, 1} = zeros(rank.order)
+  last::Array{Float64, 1} = zeros(rank.order)
   r[1] = 1
 
   i = 0
@@ -32,5 +32,10 @@ function stationary_distribution(rank)
   end
 
   return r
+end
+
+function absorbing(M::SparseMatrixCSC)
+  # something like this?
+  [1:M.n] - M.cols
 end
 

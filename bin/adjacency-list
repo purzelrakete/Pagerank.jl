@@ -1,53 +1,31 @@
 #!/usr/bin/env awk -f
 
+# meta file is set with awk -v meta=file
+
 BEGIN {
   FS = "\t"
+  OFS = "\t"
 }
 
 /./ {
   source = $1
   sink = $2
-  edges++
+  weight = $3
 
-  vertices[source]++
-  vertices[sink]++
-
-  if(sink > max_ordinal) {
-    max_ordinal = sink
-  }
-
-  if (previous_source && previous_source != source) {
-    outdegree = length(sinks)
-    print(previous_source, outdegree)
-
-    for (i = 0; i < si; i++) {
-      print(sinks[i])
-    }
-
-    delete sinks
-
-    si = 0
-    previous_source = source
-    sinks[si++] = sink
+  if(previous_sink == sink) {
+    print(source, weight)
   } else {
-    previous_source = source
-    sinks[si++] = sink
+    previous_sink = sink
+    print(sink)
+    print(source, weight)
   }
+
+  # metadata
+  edges += 1
+  max_source = source > max_source ? source : max_source
 }
 
 END {
-  outdegree = length(sinks)
-  print(previous_source, outdegree)
-
-  for (i = 0; i < si; i++) {
-    print(sinks[i])
-  }
-
-  if(previous_source > max_ordinal) {
-    max_ordinal = previous_source
-  }
-
-  # metadata. meta file is set with awk -v meta=file
-  printf("%d %d %d\n\n", edges, length(vertices), max_ordinal) >meta
+  printf("%d %d %d\n\n", edges, max_source, sink) >meta
 }
 
