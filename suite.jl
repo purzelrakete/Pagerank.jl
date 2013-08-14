@@ -17,4 +17,3 @@ for test in tests
   println(" * $(test)")
   include(test)
 end
-
