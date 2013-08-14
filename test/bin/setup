@@ -1,4 +1,7 @@
-#!/bin/sh
+#!/bin/bash
+
+set -e
+set -u
 
 mkdir -p test/fixtures
 
@@ -15,4 +18,3 @@ do
   mv $adj.tmp $adj
   rm $adj.meta
 done
-
