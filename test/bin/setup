@@ -11,7 +11,7 @@ do
   adj=test/fixtures/${dot//.dot/.adj}
 
   # transform
-  cat $fixture | bin/tsv | bin/adjacency-list -v meta=$adj.meta > $adj
+  cat $fixture | bin/tsv | awk -f bin/adjacency-list -v meta=$adj.meta > $adj
 
   # add headers
   cat $adj.meta $adj > $adj.tmp
