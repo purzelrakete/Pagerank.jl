@@ -2,7 +2,6 @@
 # Ti: sparse matrix ordinal space
 function readadj(Tv::Type, Ti::Type, alpha::Float64, path::String)
   io = open(path, "r")
-
   header = readline(io)
   edges, order, max_ordinal = map(int64, split(header))
   readline(io)
@@ -12,9 +11,9 @@ function readadj(Tv::Type, Ti::Type, alpha::Float64, path::String)
 
   sinks = 0
   outdegree = 0
-  @time for line in EachLine(io)
+  for line in EachLine(io)
     if sinks == outdegree
-      separator = strchr(line, ' ')
+      separator = search(line, ' ')
       source = int32(line[1:separator - 1])
       outdegree = int32(line[separator:end])
       add!(sources, source)
@@ -33,18 +32,20 @@ function readadj(Tv::Type, Ti::Type, alpha::Float64, path::String)
   end
 
   close(io)
-
-  absorbing = vertices - sources
   M::SparseMatrixCSC = sparse(I, J, V, max_ordinal, max_ordinal)
 
-  return M, keys(absorbing.hash), order, max_ordinal
+  absorbing = Ti[]
+  for i = keys(setdiff(vertices, sources).dict)
+    push!(absorbing, i)
+  end
+
+  return M, absorbing, order, max_ordinal
 end
 
 # Tv: sparse matrix value type
 # Ti: sparse matrix ordinal space
 function fastadj(Tv::Type, Ti::Type, alpha::Float64, path::String, bufsize::Int64)
   io = open(path, "r")
-
   header = readline(io)
   edges, order, max_ordinal = map(int64, split(header))
   readline(io)
@@ -87,8 +88,7 @@ function fastadj(Tv::Type, Ti::Type, alpha::Float64, path::String, bufsize::Int6
   end
 
   close(io)
-
-  @time M::SparseMatrixCSC = sparse(I, J, V, max_ordinal, max_ordinal)
+  M::SparseMatrixCSC = sparse(I, J, V, max_ordinal, max_ordinal)
 
   return M, order, max_ordinal
 end
@@ -102,4 +102,3 @@ function count_edges(path::String)
   spaces = countlines(path, ' ') - 1 # broken?
   lines - spaces
 end
-

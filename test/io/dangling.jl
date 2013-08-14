@@ -19,4 +19,3 @@ difference = (max(dense(expected) - dense(M)))
 @assert isequal(6, max_ordinal)
 @assert isequal(0, difference)
 @assert isequal([6], absorbing)
-
